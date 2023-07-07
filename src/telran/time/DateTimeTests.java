@@ -27,7 +27,7 @@ class DateTimeTests {
 		TemporalAdjuster fr13 = new NextFriday13();
 		ZonedDateTime zdt = ZonedDateTime.now();
 		ZonedDateTime fr13Expected = ZonedDateTime.of(2023, 10, 13, 0, 0, 0, 0, ZoneId.systemDefault());
-		assertEquals(fr13Expected, zdt.with(fr13));
+		assertEquals(fr13Expected.toLocalDate(), zdt.with(fr13).toLocalDate());
 		LocalDate fr13Expected2 = LocalDate.of(2024, 9, 13);
 		LocalDate ld = LocalDate.of(2023, 10, 13);
 		assertEquals(fr13Expected2, ld.with(fr13));
@@ -35,14 +35,20 @@ class DateTimeTests {
 	}
 	@Test
 	void canadaCurrentTime() {
-		//displayCurrentTime("Europe/London");
+//		displayCurrentTime("Europe/London");
 		//TODO display current date & time in all time zones related to Canada
 		//Date / Time (HH:mm) / Time Zone name
-	}
+
+ZoneId.getAvailableZoneIds().stream()
+	.filter(e -> e.contains("Canada"))
+	.forEach(c -> displayCurrentTime(c));			
+		}
+		
 	void displayCurrentTime(String zoneName) {
 //		ZoneId.getAvailableZoneIds()
 //		.forEach(System.out::println);
-		System.out.println(ZonedDateTime.ofInstant(Instant.now(), ZoneId.of(zoneName)));
+		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd MMMM YYYY, a KK:mm, zzzz, VV");
+		System.out.println(ZonedDateTime.ofInstant(Instant.now(), ZoneId.of(zoneName)).format(dtf));
 	}
 
 }
