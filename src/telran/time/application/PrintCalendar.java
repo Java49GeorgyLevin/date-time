@@ -8,7 +8,9 @@ import java.util.Locale;
 
 public class PrintCalendar {
 private static final int TITLE_OFFSET = 8;
+private static final int SEVEN = 7;
 static DayOfWeek[] daysOfWeek = DayOfWeek.values();
+private static int iDay;
 	public static void main(String[] args)  {
 		try {
 			RecordArguments recordArguments = getRecordArguments(args);
@@ -52,7 +54,7 @@ static DayOfWeek[] daysOfWeek = DayOfWeek.values();
 	private static int getFirstWeekDay(int month, int year) {
 		int weekDayNumber = LocalDate.of(year, month, 1)
 				.get(ChronoField.DAY_OF_WEEK);
-		return weekDayNumber - 1;
+		return (weekDayNumber + 7 - iDay) % SEVEN;
 	}
 
 	private static int getNumberOfDays(int month, int year) {
@@ -84,7 +86,39 @@ static DayOfWeek[] daysOfWeek = DayOfWeek.values();
 			getMonth(args[0]);
 		int year = args.length > 1 ? getYear(args[1]) :
 			ld.get(ChronoField.YEAR);
-		return new RecordArguments(month, year, null);
+		DayOfWeek firstWeekDay = args.length > 2 ? getFirstDay(args[2]) : daysOfWeek[0];
+		
+		return new RecordArguments(month, year, firstWeekDay);
+	}
+
+	private static DayOfWeek getFirstDay(String firstStr) throws Exception {
+		String message = "";
+		String firstStrUpper = firstStr.toUpperCase();
+		int i = 0;
+		boolean f = false;
+		
+		while(i < daysOfWeek.length && f == false) {
+			f = firstStrUpper.equals(daysOfWeek[i].toString().toUpperCase());
+			i++;
+		}
+
+		if (f == false){
+			message = "the day is not a day of week";
+			throw new Exception(message);
+		} else if (i > 1) {
+			iDay = i;
+			newDaysOfWeek(i - 1);
+		}
+		return daysOfWeek[0];
+	}
+
+	private static void newDaysOfWeek(int i) {		
+		DayOfWeek[] newDaysOfWeek = new DayOfWeek[SEVEN];
+		System.arraycopy(daysOfWeek, i, newDaysOfWeek, 0, SEVEN - i);
+		System.arraycopy(daysOfWeek, 0, newDaysOfWeek, SEVEN - i, i);
+		
+		daysOfWeek = newDaysOfWeek;
+		
 	}
 
 	private static int getYear(String yearStr) throws Exception {
