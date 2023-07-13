@@ -8,9 +8,7 @@ import java.util.Locale;
 
 public class PrintCalendar {
 private static final int TITLE_OFFSET = 8;
-private static final int SEVEN = 7;
 static DayOfWeek[] daysOfWeek = DayOfWeek.values();
-private static int iDay;
 	public static void main(String[] args)  {
 		try {
 			RecordArguments recordArguments = getRecordArguments(args);
@@ -22,8 +20,24 @@ private static int iDay;
 		
 
 	}
+	private static void setFirstDay(DayOfWeek dayOfWeek) {
+		DayOfWeek[] sourceDays = DayOfWeek.values();
+		if (dayOfWeek != daysOfWeek[0]) {
+			{
+				int dayNumber = dayOfWeek.getValue();
+				for (int i = 0; i < daysOfWeek.length; i++) {
+					int ind = dayNumber <= daysOfWeek.length ?
+							dayNumber : dayNumber - daysOfWeek.length;
+					daysOfWeek[i] = sourceDays[ind - 1];
+					dayNumber++;
+				}
+			}
+		}
+
+	}
 
 	private static void printCalendar(RecordArguments recordArguments) {
+		setFirstDay(recordArguments.firstWeekDay());
 		printTitle(recordArguments.month(), recordArguments.year());
 		printWeekDays();
 		printDays(recordArguments.month(), recordArguments.year());
@@ -52,9 +66,12 @@ private static int iDay;
 	}
 
 	private static int getFirstWeekDay(int month, int year) {
-		int weekDayNumber = LocalDate.of(year, month, 1)
-				.get(ChronoField.DAY_OF_WEEK);
-		return (weekDayNumber + 7 - iDay) % SEVEN;
+		LocalDate firstDateMonth = LocalDate.of(year, month, 1);
+		int firstWeekDay = firstDateMonth.getDayOfWeek().getValue();
+		int firstValue = daysOfWeek[0].getValue();
+		int delta = firstWeekDay - firstValue;
+
+		return delta >= 0 ? delta : delta + daysOfWeek.length;
 	}
 
 	private static int getNumberOfDays(int month, int year) {
@@ -86,41 +103,19 @@ private static int iDay;
 			getMonth(args[0]);
 		int year = args.length > 1 ? getYear(args[1]) :
 			ld.get(ChronoField.YEAR);
-		DayOfWeek firstWeekDay = args.length > 2 ? getFirstDay(args[2]) : daysOfWeek[0];
-		
-		return new RecordArguments(month, year, firstWeekDay);
+		DayOfWeek firstDayOfWeek = args.length > 2 ? getFirstDayOfWeek(args[2]) :
+			DayOfWeek.MONDAY;
+		return new RecordArguments(month, year, firstDayOfWeek);
 	}
 
-	private static DayOfWeek getFirstDay(String firstStr) throws Exception {
-		String message = "";
-		String firstStrUpper = firstStr.toUpperCase();
-		int i = 0;
-		boolean f = false;
-		
-		while(i < daysOfWeek.length && f == false) {
-			f = firstStrUpper.equals(daysOfWeek[i].toString().toUpperCase());
-			i++;
+	private static DayOfWeek getFirstDayOfWeek(String firstDayStr) throws Exception {
+		try {
+			DayOfWeek res = DayOfWeek.valueOf(firstDayStr.toUpperCase());
+			return res;
+		} catch (Exception e) {
+			throw new Exception(firstDayStr.toUpperCase() + " wrong day of week");
 		}
-
-		if (f == false){
-			message = "the day is not a day of week";
-			throw new Exception(message);
-		} else if (i > 1) {
-			iDay = i;
-			newDaysOfWeek(i - 1);
-		}
-		return daysOfWeek[0];
 	}
-
-	private static void newDaysOfWeek(int i) {		
-		DayOfWeek[] newDaysOfWeek = new DayOfWeek[SEVEN];
-		System.arraycopy(daysOfWeek, i, newDaysOfWeek, 0, SEVEN - i);
-		System.arraycopy(daysOfWeek, 0, newDaysOfWeek, SEVEN - i, i);
-		
-		daysOfWeek = newDaysOfWeek;
-		
-	}
-
 	private static int getYear(String yearStr) throws Exception {
 		String message = "";
 		int year = 0;
